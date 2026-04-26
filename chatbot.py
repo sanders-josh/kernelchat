@@ -1,3 +1,11 @@
+"""
+A simple command-line chatbot interface using Hugging Face's OpenAI-compatible API.
+
+Created by Josh Sanders, 2026.
+
+Usage:
+    python chatbot.py [--model MODEL_NAME] [--persona PERSONA_NAME]
+"""
 import os
 import sys
 import re
@@ -23,7 +31,7 @@ def get_bot() -> OpenAI:
     return bot
 
 def prompt_bot(prompt:str, *,
-               model:str='deepseek-ai/DeepSeek-V4-Pro',
+               model:str=None,
                prompt_history:list[dict]=None):
     """
     Connect to bot if not connected.
@@ -34,6 +42,9 @@ def prompt_bot(prompt:str, *,
     prompt={"role": "user",
             "content": prompt}
     
+    if model is None:
+        model = 'deepseek-ai/DeepSeek-V4-Pro'
+
     messages = ([prompt]
                 if prompt_history is None
                 else [*prompt_history, prompt])
@@ -74,8 +85,21 @@ def user_is_done(text) -> bool:
     text = text.strip().lower()
     return text in ["q", "quit", "exit"] or bool(GOODBYE_RE.search(text))
 
+def print_help():
+    """
+    Print help message for using the chatbot.
+    """
+    print("Usage: python chatbot.py [--model MODEL_NAME] [--persona PERSONA_NAME]")
+    print("\nOptions:")
+    print("  --model: The model to use for the bot. (e.g. openai/gpt-oss-120b:fastest)")
+    print("  --persona: The persona to use for the bot. (e.g. kernel, leanne, thomas, four_scythes, stephen_king)")
+
 def main():
     print()
+
+    if '--help' in sys.argv or '-h' in sys.argv:
+        print_help()
+        return
 
     # get command line arguments for model, persona, etc.
     config = configs.from_args(sys.argv)
@@ -93,9 +117,9 @@ def main():
 
     while True:
         # prompt bot; get stream to monitor and updated chat history
-        stream, chat_history = prompt_bot(prompt,
-                                          model=model,
-                                          prompt_history=history)
+        stream, history = prompt_bot(prompt,
+                                     model=model,
+                                     prompt_history=history)
 
         # exit on exceptions, goodbyes, etc.
         if stream is None:

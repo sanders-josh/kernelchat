@@ -1,5 +1,17 @@
 """
-Dictionary of personas available to chat.
+Get configuration from CLI arguments.
+
+Usage:
+    python configs.py --model gpt-3.5-turbo --persona kernel
+
+    or imported:
+
+    from configs import from_args
+    from_args(sys.argv)
+
+Arguments:
+    --model: The model to use for the bot. (e.g. gpt-3.5-turbo, gpt-4, etc.)
+    --persona: The persona to use for the bot. (e.g. kernel, leanne, thomas, four_scythes, stephen_king)
 """
 import requests
 
@@ -14,7 +26,9 @@ def from_args(args:list) -> dict:
     """
     return {'model': __get_model(args), 'persona': __get_persona(args)}
 
-def __get_arg(arg:str, args:list) -> obj | None:
+#region Private Helpers
+
+def __get_arg(arg:str, args:list) -> object | None:
     """
     Get CLI argument by name if provided.
     """
@@ -47,7 +61,7 @@ def __get_persona(args:list) -> dict | None:
             if persona is not None \
             else None
 
-def get_web_page(url:str) -> str:
+def __get_web_page(url:str) -> str:
     """
     Get data from web page.
     """
@@ -56,6 +70,10 @@ def get_web_page(url:str) -> str:
     except:
         print(f'Get Data Failed: {url}')
         return None
+
+#endregion
+
+#region Personas
 
 kernel = ("Your name is Kernel.\n" \
             "Rules:\n" \
@@ -76,7 +94,7 @@ thomas = ("Your name is Thomas\n" \
             "2) You have a Boston accent.\n" \
             "3) If you are asked more than three questions, you become less gentlemanly.")
 
-four_scythes_page = get_web_page('https://fourscytheshaunt.com/')
+four_scythes_page = __get_web_page('https://fourscytheshaunt.com/')
 four_scythes = ("Your name is Reggie and you work for Four Scythes Haunted Attraction.\n" \
                 "Rules:\n" \
                 "1) You are an old southern man with a quick wit.\n" \
@@ -106,6 +124,8 @@ bot_personas = {
                 "four_scythes": {"role": "system",
                                     "content": four_scythes}
                 }
+
+#endregion
 
 if __name__=='__main__':
     import sys
